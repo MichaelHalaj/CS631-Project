@@ -1,5 +1,25 @@
 import mysql.connector
+from flask import Flask, render_template, request, redirect, url_for
 
+app = Flask(__name__)
+
+db_config = {
+    'host': 'localhost',
+    'user': 'root',
+    'password': 'CS631Project',
+    'database': 'test_db1'
+}
+
+conn = mysql.connector.connect(**db_config)
+cursor = conn.cursor()
+
+@app.route('/')
+def index():
+    # Fetch users from the database
+    cursor.execute('SELECT * FROM pet')
+    pets = cursor.fetchall()
+    return render_template('index.html', pets=pets)
+'''
 def connect_to_database():
     # Establish a connection to the MySQL server
     return mysql.connector.connect(
@@ -52,6 +72,6 @@ def main():
     # Close the connection when done
     cursor.close()
     connection.close()
-
+'''
 if __name__ == "__main__":
-    main()
+    app.run(debug=True)
