@@ -7,10 +7,14 @@
 </head>
 <body>
     <h1>User List</h1>
-    <ul>
-        {% for pet in pets %}
-            <li>{{ pet[0] }}  {{ pet[1] }}  {{ pet[2] }} </li>
-        {% endfor %}
-    </ul>
+    <table>
+        <tr>
+            {% for pet in pets %}
+                {% for item in pet %}
+                <td>{{ item }}</td>
+                {% endfor %}
+            {% endfor %}
+        </tr>
+    </table>
 </body>
 </html>

@@ -2,7 +2,7 @@ CREATE DATABASE IF NOT EXISTS OnlineComputerStore;
 USE OnlineComputerStore;
 
 CREATE TABLE IF NOT EXISTS CUSTOMER (
-    CID INT NOT NULL,
+    CID INT NOT NULL AUTO_INCREMENT,
     FName varchar(25),
     LName varchar(25),
     EMail varchar(255),
@@ -66,7 +66,7 @@ CREATE TABLE IF NOT EXISTS TRANSACTIONS (
 );
 
 CREATE TABLE IF NOT EXISTS PRODUCT (
-    PID INT NOT NULL,
+    PID INT NOT NULL AUTO_INCREMENT,
     PType varchar(30),
     PName varchar(30),
     PPrice decimal(7, 2) NOT NULL,
