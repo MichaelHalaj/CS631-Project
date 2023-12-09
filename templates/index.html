@@ -1,13 +1,13 @@
 {% extends 'base.html' %}
 {% block content %}
     <h1>User List</h1>
-    <table>
-        <tr>
-            {% for customer in customers %}
+    {% for customer in customers %}
+        <table>
+            <tr> 
                 {% for item in customer %}
                 <td>{{ item }}</td>
-                {% endfor %}
-            {% endfor %}
-        </tr>
-    </table>
+                 {% endfor %}   
+            </tr>
+        </table>
+    {% endfor %}
 {% endblock %}
