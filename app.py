@@ -51,7 +51,9 @@ def register():
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
-        cursor.execute("SELECT CID FROM customer WHERE Email = %s;", (request.form['EMail'], ))
+        query = "SELECT CID FROM customer WHERE Email = %s"
+        values = (request.form['EMail'], )
+        cursor.execute(query, values)
         user_cid = cursor.fetchone()
         if user_cid:
             session['CID'] = user_cid[0]
