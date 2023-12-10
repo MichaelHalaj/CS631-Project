@@ -17,12 +17,14 @@ db_config = {
 db_connection = mysql.connector.connect(**db_config)
 cursor = db_connection.cursor()
 
+def is_logged_in():
+    if not session.get("CID"):
+        return redirect(url_for("login"))
 
 @app.route('/')
 def index():
     # Fetch users from the database
-    if not session.get("CID"):
-        return redirect("login")
+    is_logged_in()
     print(session)
     cursor.execute('SELECT * FROM customer')
     customers = cursor.fetchall()
@@ -58,9 +60,27 @@ def login():
         if user_cid:
             session['CID'] = user_cid[0]
             return redirect(url_for('home'))
-    else:
-        pass
     return render_template('login.html')
+
+@app.route('/products', methods=['GET', 'POST'])
+def products():
+    is_logged_in()
+    cursor = db_connection.cursor(dictionary = True)
+    query = """SELECT * FROM PRODUCT P 
+            JOIN COMPUTER C ON P.PID = C.PID 
+            JOIN LAPTOP L ON C.PID = L.PID;
+            """
+    cursor.execute(query)
+    #products = dict(zip(cursor.column_names, cursor.fetchone()))
+    products = cursor.fetchall()
+
+    query = """SELECT * FROM PRODUCT P
+                JOIN COMPUTER C ON P.PID = C.PID
+                WHERE P.PTYPE = 'COMPUTER'"""
+    cursor.execute(query)
+    computers = cursor.fetchall()
+
+    return render_template('products.html', products = products, computers = computers)
 
 if __name__ == "__main__":
     app.run(debug=True)

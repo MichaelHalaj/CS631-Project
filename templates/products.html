@@ -1,4 +1,26 @@
 {% extends 'base.html' %}
 {% block content %}
+    <h1>Products</h1>
+    <div>{{ products }}</div>
+    <div>{{ computers }}</div>
+    <table>
+        <tr>
+            {% for key in products[0]  %}
+                <td>{{ key }}</td>
+            {% endfor %}
+        </tr>
+        {% for p in products %}
+            <tr>
+                {% for key, val in p.items() %}
+                    <td>{{ val }}</td>
+                {% endfor %}
+            </tr>
+        {% endfor %}
 
+    </table>
+    {% for product in products %}
+        {% for item in product %}
+            <div>{{ item }}</div>
+        {% endfor %}
+    {% endfor %}
 {% endblock %}
