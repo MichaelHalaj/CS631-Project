@@ -23,6 +23,10 @@ def is_logged_in():
         return False
     return True
 
+@app.context_processor
+def inject_user():
+    return dict(user = is_logged_in())
+
 @app.route('/')
 def index():
     # Fetch users from the database
