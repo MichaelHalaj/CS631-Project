@@ -15,7 +15,7 @@ db_config = {
 }
 
 db_connection = mysql.connector.connect(**db_config)
-cursor = db_connection.cursor(buffered=True)
+cursor = db_connection.cursor()
 
 def is_logged_in():
     if not session.get("CID"):
@@ -45,35 +45,34 @@ def register():
         query = "INSERT INTO customer (FName, LName, EMail, Address, Phone) VALUES (%s, %s, %s, %s, %s)"
         values = (request.form['FName'], request.form['LName'], request.form['EMail'], request.form['Address'], request.form['Phone'])
         cursor.execute(query, values)
+        cid = cursor.lastrowid # get last auto-increment column id
 
-        query = "SELECT CID FROM customer WHERE EMail = %s"
-        values = (request.form['EMail'], )
-        cursor.execute(query, values)
-        cid = cursor.fetchone()
-        print(cid)
-        """query = "INSERT INTO CREDIT_CARD VALUES (%s, %s, %s, %s, %s, %s, %s)"
+        query = """
+                    INSERT INTO CREDIT_CARD 
+                    (CCNumber, SecNumber, OwnerName, CCType, BilAddress, ExpDate, StoredCardCID)
+                    VALUES (%s, %s, %s, %s, %s, %s, %s)
+                """
         values = (request.form['CCNumber'], 
                   request.form['SecNumber'], 
                   request.form['OwnerName'],
                   request.form['CCType'],
                   request.form['BilAddress'],
-                  request.form['ExpDate'], 
+                  request.form['ExpDate'] + '-01', 
                   cid)
         cursor.execute(query, values)
-"""
-        #query = """INSERT INTO SHIPPING_ADDRESS (SAName, RecepientName, Street, SNumber, City, Zip, State, Country)
-         #           VALUES (%s, %s, %s, %s, %s, %s, %s, %s)"""
-        """values = (cid,
+
+        query = """INSERT INTO SHIPPING_ADDRESS (CID, SAName, RecepientName, Street, SNumber, City, Zip, State, Country)
+                   VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)"""
+        values = (cid,
                   request.form['SAName'], 
                   request.form['RecepientName'], 
                   request.form['Street'],
                   request.form['SNumber'],
                   request.form['City'],
                   request.form['Zip'],
+                  request.form['State'],
                   request.form['Country'])
-        
         cursor.execute(query, values)
-        """
         db_connection.commit()
         cursor.close()
         return redirect(url_for('index'))
