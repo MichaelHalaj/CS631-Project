@@ -10,14 +10,41 @@
             {% endfor %}
         </tr>
         {% for p in products %}
-            <tr>
-                {% for key, val in p.items() %}
-                    <td>{{ val }}</td>
-                {% endfor %}
-            </tr>
+            <form action="{{ url_for('add_to_basket') }}" method="post">
+                <tr>
+                    {% for key, val in p.items() %}
+                        <td>{{ val }}</td>
+                    {% endfor %}
+                    <td>
+                        <input type="hidden" name="pid" value="{{ p.PID }}">
+                        <input type="submit" value="Add to Basket">
+                    </td>
+                </tr>
+            </form>
         {% endfor %}
-
     </table>
+
+    <table>
+        <tr>
+            {% for key in computers[0]  %}
+                <td>{{ key }}</td>
+            {% endfor %}
+        </tr>
+        {% for p in computers %}
+            <form action="{{ url_for('add_to_basket') }}" method="post">
+                <tr>
+                    {% for key, val in p.items() %}
+                        <td>{{ val }}</td>
+                    {% endfor %}
+                    <td>
+                        <input type="hidden" name="pid" value="{{ p.PID }}">
+                        <input type="submit" value="Add to Basket">
+                    </td>
+                </tr>
+            </form>
+        {% endfor %}
+    </table>
+
     {% for product in products %}
         {% for item in product %}
             <div>{{ item }}</div>

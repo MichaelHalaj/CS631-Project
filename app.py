@@ -15,7 +15,7 @@ db_config = {
 }
 
 db_connection = mysql.connector.connect(**db_config)
-cursor = db_connection.cursor()
+cursor = db_connection.cursor(buffered=True)
 
 def is_logged_in():
     if not session.get("CID"):
@@ -45,6 +45,35 @@ def register():
         query = "INSERT INTO customer (FName, LName, EMail, Address, Phone) VALUES (%s, %s, %s, %s, %s)"
         values = (request.form['FName'], request.form['LName'], request.form['EMail'], request.form['Address'], request.form['Phone'])
         cursor.execute(query, values)
+
+        query = "SELECT CID FROM customer WHERE EMail = %s"
+        values = (request.form['EMail'], )
+        cursor.execute(query, values)
+        cid = cursor.fetchone()
+        print(cid)
+        """query = "INSERT INTO CREDIT_CARD VALUES (%s, %s, %s, %s, %s, %s, %s)"
+        values = (request.form['CCNumber'], 
+                  request.form['SecNumber'], 
+                  request.form['OwnerName'],
+                  request.form['CCType'],
+                  request.form['BilAddress'],
+                  request.form['ExpDate'], 
+                  cid)
+        cursor.execute(query, values)
+"""
+        #query = """INSERT INTO SHIPPING_ADDRESS (SAName, RecepientName, Street, SNumber, City, Zip, State, Country)
+         #           VALUES (%s, %s, %s, %s, %s, %s, %s, %s)"""
+        """values = (cid,
+                  request.form['SAName'], 
+                  request.form['RecepientName'], 
+                  request.form['Street'],
+                  request.form['SNumber'],
+                  request.form['City'],
+                  request.form['Zip'],
+                  request.form['Country'])
+        
+        cursor.execute(query, values)
+        """
         db_connection.commit()
         cursor.close()
         return redirect(url_for('index'))
@@ -66,6 +95,7 @@ def login():
 def products():
     is_logged_in()
     cursor = db_connection.cursor(dictionary = True)
+
     query = """SELECT * FROM PRODUCT P 
             JOIN COMPUTER C ON P.PID = C.PID 
             JOIN LAPTOP L ON C.PID = L.PID;
@@ -81,6 +111,12 @@ def products():
     computers = cursor.fetchall()
 
     return render_template('products.html', products = products, computers = computers)
+
+@app.route('/add_to_basket', methods=['POST'])
+def add_to_basket():
+    if(request == 'POST'):
+        return request.form['pid']
+    return request.form['pid']
 
 if __name__ == "__main__":
     app.run(debug=True)
