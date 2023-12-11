@@ -13,6 +13,9 @@
         <a href="/register">Register</a>
         <a href="/products">Products</a>
         <a href="/#">Sales Statistics</a>
+        {% if user %}
+            <a href="/edit">Edit</a>
+        {% endif %}
     </div>
     {% block content %}{% endblock %}
 </body>

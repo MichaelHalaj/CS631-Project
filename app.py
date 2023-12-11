@@ -19,7 +19,9 @@ cursor = db_connection.cursor()
 
 def is_logged_in():
     if not session.get("CID"):
-        return redirect(url_for("login"))
+        print('no cid')
+        return False
+    return True
 
 @app.route('/')
 def index():
@@ -80,6 +82,7 @@ def register():
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
+    cursor = db_connection.cursor(buffered=True)
     if request.method == 'POST':
         query = "SELECT CID FROM customer WHERE Email = %s"
         values = (request.form['EMail'], )
@@ -92,7 +95,9 @@ def login():
 
 @app.route('/products', methods=['GET', 'POST'])
 def products():
-    is_logged_in()
+    if not is_logged_in():
+        return redirect(url_for('login'))
+    cid = session.get("CID")
     cursor = db_connection.cursor(dictionary = True)
 
     query = """SELECT * FROM PRODUCT P 
@@ -109,13 +114,45 @@ def products():
     cursor.execute(query)
     computers = cursor.fetchall()
 
-    return render_template('products.html', products = products, computers = computers)
+    query = """
+            SELECT P.PNAME FROM BASKET B
+            JOIN APPEARS_IN A ON B.BID = A.BID
+            JOIN PRODUCT P ON P.PID = A.PID
+            WHERE B.CID=%s
+            """
+    values = (cid, )
+    cursor.execute(query, values)
+    basket = cursor.fetchall()
+    db_connection.commit()
+    return render_template('products.html', products = products, computers = computers, basket = basket)
 
 @app.route('/add_to_basket', methods=['POST'])
 def add_to_basket():
-    if(request == 'POST'):
-        return request.form['pid']
-    return request.form['pid']
+    is_logged_in()
+    if request.method == 'POST':
+        cursor = db_connection.cursor()
+        cid = session.get("CID")
+        print(cid)
+        query = """
+                INSERT INTO BASKET (CID)
+                VALUES (%s)
+                """
+        values = (cid, )
+        cursor.execute(query, values)
+
+        bid = cursor.lastrowid
+        query = """
+                INSERT INTO APPEARS_IN (BID, PID, Quantity, PriceSold)
+                VALUES (%s, %s, %s, %s)
+                """
+        values = (bid,
+                request.form['pid'],
+                0,
+                0)
+        cursor.execute(query, values)
+        db_connection.commit()
+        return redirect(url_for('products'))
+    return redirect(url_for('products'))
 
 if __name__ == "__main__":
     app.run(debug=True)

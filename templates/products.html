@@ -1,8 +1,8 @@
 {% extends 'base.html' %}
 {% block content %}
+    <h1>Current Basket</h1>
+        <div>{{ basket }}</div>
     <h1>Products</h1>
-    <div>{{ products }}</div>
-    <div>{{ computers }}</div>
     <table>
         <tr>
             {% for key in products[0]  %}
@@ -44,10 +44,4 @@
             </form>
         {% endfor %}
     </table>
-
-    {% for product in products %}
-        {% for item in product %}
-            <div>{{ item }}</div>
-        {% endfor %}
-    {% endfor %}
 {% endblock %}
