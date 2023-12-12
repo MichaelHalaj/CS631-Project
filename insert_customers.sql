@@ -1,24 +1,95 @@
-BEGIN;
+DELIMITER //
 
-INSERT INTO CUSTOMER (FName, LName, EMail, Address, Phone, Status)
-VALUES ('Frank', 'Gad', 'f@f', 'hadaksd', '29032840', null);
+CREATE PROCEDURE InsertRandomData()
+BEGIN
+  DECLARE i INT DEFAULT 0;
 
-SET @main_table_id = LAST_INSERT_ID();
+  WHILE i < 20 DO
+    BEGIN
+      -- Insert random data into CUSTOMER table
+      INSERT INTO CUSTOMER (FName, LName, EMail, Address, Phone, Status)
+      VALUES (
+        CONCAT('FirstName', FLOOR(RAND() * 100)),
+        CONCAT('LastName', FLOOR(RAND() * 100)),
+        CONCAT('email', i, '@example.com'),
+        CONCAT('Address', FLOOR(RAND() * 100)),
+        FLOOR(RAND() * 1000000000),
+        NULL
+      );
 
-INSERT INTO CREDIT_CARD (CCNumber, SecNumber, OwnerName, CCType, BilAddress, ExpDate, StoredCardCID)
-VALUES (21312312, 564, 'dajsd', 'hasjd', 'asdasd', '2028-11-20', @main_table_id);
+      -- Get the last inserted ID
+      SET @CID = LAST_INSERT_ID();
+      SET @CCNumber = FLOOR(RAND() * 10000000000000000);
+      -- Insert random data into CREDIT_CARD table
+      INSERT INTO CREDIT_CARD (CCNumber, SecNumber, OwnerName, CCType, BilAddress, ExpDate, StoredCardCID)
+      VALUES (
+        @CCNumber,
+        FLOOR(RAND() * 1000),
+        CONCAT('Owner', FLOOR(RAND() * 100)),
+        CONCAT('Type', FLOOR(RAND() * 100)),
+        CONCAT('BillingAddress', FLOOR(RAND() * 100)),
+        DATE_ADD(NOW(), INTERVAL FLOOR(RAND() * 365) DAY), -- Random expiration date within the next year
+        @CID
+      );
+    
+      SET @SAName = CONCAT('ShippingAddress', FLOOR(RAND() * 100));
+      -- Insert random data into SHIPPING_ADDRESS table
+      INSERT INTO SHIPPING_ADDRESS (CID, SAName, RecipientName, Street, SNumber, City, Zip, State, Country)
+      VALUES (
+        @CID,
+        @SAName,
+        CONCAT('Recipient', FLOOR(RAND() * 100)),
+        CONCAT('Street', FLOOR(RAND() * 100)),
+        FLOOR(RAND() * 100),
+        CONCAT('City', FLOOR(RAND() * 100)),
+        LPAD(FLOOR(RAND() * 100000), 5, '0'), -- Pad Zip with leading zeros
+        CONCAT('State', FLOOR(RAND() * 100)),
+        CONCAT('Country', FLOOR(RAND() * 100))
+      );
+      
+      INSERT INTO BASKET (CID)
+      VALUES (@CID);
 
-COMMIT;
 
+      SET @BID = LAST_INSERT_ID();
 
-BEGIN;
+      SET @PID = (SELECT PID FROM PRODUCT
+                  ORDER BY RAND()
+                  LIMIT 1);
 
-INSERT INTO CUSTOMER (FName, LName, EMail, Address, Phone, Status)
-VALUES ('Sam', 'Jasd', 's@j', 'hjioerw', '409342', null);
+      SET @PriceSold = (SELECT
+                            LEAST(P.PPrice, COALESCE(OP.OfferPrice, P.PPrice)) AS MinPrice
+                        FROM
+                            PRODUCT P
+                        LEFT JOIN
+                            OFFER_PRODUCT OP ON P.PID = OP.PID
+                        WHERE 
+                            P.PID = @PID);
 
-SET @main_table_id = LAST_INSERT_ID();
+      SET @Quantity = FLOOR(RAND() * 4);
+      INSERT INTO APPEARS_IN(BID, PID, Quantity, PriceSold)
+      VALUES (
+        @BID,
+        @PID,
+        @Quantity,
+        @PriceSold * @Quantity
+      );
 
-INSERT INTO CREDIT_CARD (CCNumber, SecNumber, OwnerName, CCType, BilAddress, ExpDate, StoredCardCID)
-VALUES (123123890, 342, 'Sam', 'hasjd', 'asdasd', '2029-11-20', @main_table_id);
+      INSERT INTO TRANSACTIONS (BID, CCNumber, CID, SAName, Tdate, TTag)
+      VALUES (
+        @BID,
+        @CCNumber,
+        @CID,
+        @SAName,
+        DATE_ADD('2022-01-01', INTERVAL FLOOR(RAND() * 365) DAY),
+        'delivered'
+      );
+      SET i = i + 1;
+    END;
+  END WHILE;
+END //
 
-COMMIT;
+DELIMITER ;
+
+-- Call the stored procedure
+CALL InsertRandomData();
