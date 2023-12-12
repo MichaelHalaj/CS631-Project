@@ -19,7 +19,7 @@ BEGIN
 
       -- Get the last inserted ID
       SET @CID = LAST_INSERT_ID();
-      SET @CCNumber = FLOOR(RAND() * 10000000000000000);
+      SET @CCNumber = FLOOR(RAND() * 1000000000000);
       -- Insert random data into CREDIT_CARD table
       INSERT INTO CREDIT_CARD (CCNumber, SecNumber, OwnerName, CCType, BilAddress, ExpDate, StoredCardCID)
       VALUES (

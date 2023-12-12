@@ -1,0 +1,63 @@
+{% extends 'base.html' %}
+{% block content %}
+    <h1>Sales Statistics</h1>
+    <div>1. Compute the total amount charged per credit card.</div>
+    <table>
+        <tr>
+            {% for key in total_per_card[0]  %}
+                <td>{{ key }}</td>
+            {% endfor %}
+        </tr>
+            {% for i in total_per_card %}
+                <tr>
+                    {% for key, val in i.items() %}
+                        <td>{{ val }}</td>
+                    {% endfor %}
+                </tr>
+            {% endfor %}
+    </table>
+    <br>
+    <div>2. Compute the 10 best customers (in terms of money spent) in descending order.</div>
+    <table>
+        <tr>
+            {% for key in best_customers[0]  %}
+                <td>{{ key }}</td>
+            {% endfor %}
+        </tr>
+        <tr>
+            {% for i in best_customers %}
+                <tr>
+                    {% for key, val in i.items() %}
+                        <td>{{ val }}</td>
+                    {% endfor %}
+                </tr>
+            {% endfor %}
+        </tr>
+    </table>
+
+    <br>
+    <div>3. For a given time period (begin date and end date) compute the most frequently sold products.</div>
+    <form action="{{ url_for('statistics') }}" method="post" id="q3">
+        <label for="start1">Start Date</label>
+        <input type="date" name="start1" id="start1" value="2018-07-22"/>
+
+        <label for="end1">End Date</label>
+        <input type="date" name="end1" id="end1" value="2023-12-30">
+        <button type="submit" value="Search">Search</button>
+        
+    </form>
+    <div>{{ frequently_sold }}</div>
+    <br>
+    <div>4. For a given time period (begin date and end date) compute the products which are
+        sold to the highest number of distinct customers.
+        </div>
+
+    <br>
+    <div>5. For a given time period (begin date and end date) compute the maximum basket total
+        amount per credit card.</div>
+
+    <br>
+    <div>6. For a given time period (begin date and end date) compute the average selling product
+        price per product type (desktop, laptop and printer).
+        </div>
+{% endblock %}

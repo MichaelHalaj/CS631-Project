@@ -48,6 +48,7 @@ def home():
 def logout():
     session.clear()
     return redirect(url_for('login'))
+
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     if request.method == 'POST':
@@ -140,7 +141,6 @@ def add_to_basket():
     if request.method == 'POST':
         cursor = db_connection.cursor()
         cid = session.get("CID")
-        print(cid)
         query = """
                 INSERT INTO BASKET (CID)
                 VALUES (%s)
@@ -231,6 +231,53 @@ def edit():
     cursor.execute(query, values)
     shipping_address = cursor.fetchone()
     return render_template('edit.html', credit_card = credit_card, shipping_address = shipping_address, cid = cid)
+
+def fetch_statistics_1_and_2():
+    cursor = db_connection.cursor(dictionary = True)
+    query = """
+            SELECT T.CCNumber, SUM(A.PriceSold) as Total_Charged
+            FROM Transactions T
+            JOIN BASKET B ON T.BID = B.BID
+            JOIN APPEARS_IN A on B.BID = A.BID
+            GROUP BY T.CCNumber
+            """
+    cursor.execute(query)
+    total_per_card = cursor.fetchall()
+
+    query = """
+        SELECT C.CID, C.FNAME, C.LNAME, SUM(A.PriceSold) as Total_Charged
+        FROM CUSTOMER C
+        JOIN BASKET B ON C.CID = B.CID
+        JOIN APPEARS_IN A on B.BID = A.BID
+        GROUP BY C.CID
+        ORDER BY Total_Charged DESC
+        LIMIT 10
+        """
+    cursor.execute(query)
+    best_customers = cursor.fetchall()
+
+    return total_per_card, best_customers
+
+@app.route('/statistics', methods=['GET', 'POST'])
+def statistics():
+    total_per_card, best_customers = fetch_statistics_1_and_2()
+    if request.method == 'POST':
+        query = """
+                SELECT P.PID, P.PNAME, SUM(A.Quantity) as Quantity_Sold FROM PRODUCT P
+                JOIN APPEARS_IN A ON P.PID = A.PID
+                JOIN BASKET B ON A.BID = B.BID
+                JOIN TRANSACTIONS T ON B.BID = T.BID
+                WHERE T.TDate BETWEEN %s AND %s
+                GROUP BY P.PID
+                ORDER BY Quantity_Sold DESC
+                """
+        values = (request.form['start1'], request.form['end1'])
+        cursor.execute(query, values)
+        frequently_sold = cursor.fetchall()
+        return render_template('statistics.html', total_per_card = total_per_card, best_customers = best_customers, frequently_sold = frequently_sold)
+    else:
+        return render_template('statistics.html', total_per_card = total_per_card, best_customers = best_customers)
+    
 
 if __name__ == "__main__":
     app.run(debug=True)
