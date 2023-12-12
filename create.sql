@@ -5,7 +5,7 @@ CREATE TABLE IF NOT EXISTS CUSTOMER (
     CID INT NOT NULL AUTO_INCREMENT,
     FName varchar(25),
     LName varchar(25),
-    EMail varchar(255),
+    EMail varchar(255) UNIQUE,
     Address varchar(255),
     Phone varchar(15),
     Status varchar(20),
@@ -34,7 +34,7 @@ CREATE TABLE IF NOT EXISTS CREDIT_CARD (
 CREATE TABLE IF NOT EXISTS SHIPPING_ADDRESS (
     CID INT NOT NULL,
     SAName varchar(50) NOT NULL,
-    RecepientName varchar(50),
+    RecipientName varchar(50),
     Street varchar(25),
     SNumber INT,
     City varchar(25),

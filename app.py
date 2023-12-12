@@ -44,6 +44,10 @@ def home():
     customers = cursor.fetchall()
     return render_template('index.html', customers=customers)
 
+@app.route('/logout')
+def logout():
+    session.clear()
+    return redirect(url_for('login'))
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     if request.method == 'POST':
@@ -67,11 +71,11 @@ def register():
                   cid)
         cursor.execute(query, values)
 
-        query = """INSERT INTO SHIPPING_ADDRESS (CID, SAName, RecepientName, Street, SNumber, City, Zip, State, Country)
+        query = """INSERT INTO SHIPPING_ADDRESS (CID, SAName, RecipientName, Street, SNumber, City, Zip, State, Country)
                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)"""
         values = (cid,
                   request.form['SAName'], 
-                  request.form['RecepientName'], 
+                  request.form['RecipientName'], 
                   request.form['Street'],
                   request.form['SNumber'],
                   request.form['City'],
@@ -157,6 +161,76 @@ def add_to_basket():
         db_connection.commit()
         return redirect(url_for('products'))
     return redirect(url_for('products'))
+
+@app.route('/confirm_edit', methods=['POST'])
+def confirm_edit():
+    if not is_logged_in():
+        return redirect(url_for('login'))
+    cid = session.get("CID")
+    query = """
+            UPDATE CREDIT_CARD
+            SET CCNumber = %s, 
+            SecNumber = %s, 
+            OwnerName = %s, 
+            CCType = %s,
+            BilAddress = %s, 
+            ExpDate =%s 
+            WHERE StoredCardCID = %s
+            """
+    values = (request.form['CCNumber'], 
+                request.form['SecNumber'], 
+                request.form['OwnerName'],
+                request.form['CCType'],
+                request.form['BilAddress'],
+                request.form['ExpDate'] + '-01', 
+                cid)
+    cursor.execute(query, values)
+
+    query = """UPDATE SHIPPING_ADDRESS  
+            SET SAName = %s, 
+            RecipientName = %s, 
+            Street = %s, 
+            SNumber = %s, 
+            City = %s, 
+            Zip = %s, 
+            State = %s, 
+            Country = %s
+            WHERE CID = %s
+            """
+    values = (request.form['SAName'], 
+                request.form['RecipientName'], 
+                request.form['Street'],
+                request.form['SNumber'],
+                request.form['City'],
+                request.form['Zip'],
+                request.form['State'],
+                request.form['Country'],
+                cid)
+    cursor.execute(query, values)
+    return redirect(url_for('edit'))
+
+@app.route('/edit', methods=['GET', 'POST'])
+def edit():
+    if not is_logged_in():
+        return redirect(url_for('login'))
+    cursor = db_connection.cursor(buffered=True, dictionary = True)
+    cid = session.get('CID')
+    query = """
+            SELECT * FROM CREDIT_CARD
+            WHERE StoredCardCID = %s
+            """
+    values = (cid, )
+    cursor.execute(query, values)
+    credit_card = cursor.fetchone()
+
+    query = """
+            SELECT * FROM SHIPPING_ADDRESS
+            WHERE CID = %s
+            """
+    values = (cid, )
+    cursor.execute(query, values)
+    shipping_address = cursor.fetchone()
+    return render_template('edit.html', credit_card = credit_card, shipping_address = shipping_address, cid = cid)
 
 if __name__ == "__main__":
     app.run(debug=True)
