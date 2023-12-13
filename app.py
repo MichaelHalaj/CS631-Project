@@ -53,7 +53,7 @@ def logout():
 def register():
     if request.method == 'POST':
         cursor = db_connection.cursor()
-        query = "INSERT INTO customer (FName, LName, EMail, Address, Phone) VALUES (%s, %s, %s, %s, %s)"
+        query = "INSERT INTO customer (FName, LName, EMail, CAddress, Phone) VALUES (%s, %s, %s, %s, %s)"
         values = (request.form['FName'], request.form['LName'], request.form['EMail'], request.form['Address'], request.form['Phone'])
         cursor.execute(query, values)
         cid = cursor.lastrowid # get last auto-increment column id
@@ -162,6 +162,23 @@ def add_to_basket():
         return redirect(url_for('products'))
     return redirect(url_for('products'))
 
+@app.route('/remove_from_basket', methods=['POST'])
+def remove_from_basket():
+    is_logged_in()
+    if request.method == 'POST':
+        cursor = db_connection.cursor()
+        query = """
+                DELETE *
+                FROM APPEARS_IN
+                WHERE BID=%s AND PID=%s
+                """
+        values = (request.form['bid'],
+                  request.form['pid'])
+        cursor.execute(query, values)
+        db_connection.commit()
+        return redirect(url_for('products'))
+    return redirect(url_for('products'))
+
 @app.route('/confirm_edit', methods=['POST'])
 def confirm_edit():
     if not is_logged_in():
@@ -208,6 +225,64 @@ def confirm_edit():
                 cid)
     cursor.execute(query, values)
     return redirect(url_for('edit'))
+
+@app.route('/prepare_purchase', methods=['POST'])
+def prepare_purchase():
+    if not is_logged_in():
+        return redirect(url_for('login'))
+    cid = session.get("CID")
+    query = """
+            SELECT *
+            FROM CREDIT_CARD
+            WHERE STOREDCARDCID=%s
+            """
+    values = (cid)
+    cursor.execute(query, values)
+    credit_cards=cursor.fetchall()
+
+    query = """
+            SELECT *
+            FROM SHIPPING_ADDRESS
+            WHERE CID=%s
+            """
+    values = (cid)
+    cursor.execute(query, values)
+    addrs=cursor.fetchall()
+    query = """
+            SELECT B.BID 
+            FROM BASKET B
+            WHERE B.CID=%s
+            """
+    values = (cid, )
+    cursor.execute(query, values)
+    bid = cursor.fetchone()
+    query = """
+            SELECT P.PNAME, A.PRICESOLD 
+            FROM BASKET B
+            JOIN APPEARS_IN A ON B.BID = A.BID
+            JOIN PRODUCT P ON P.PID = A.PID
+            WHERE B.CID=%s
+            """
+    values = (cid, )
+    cursor.execute(query, values)
+    basket = cursor.fetchall()
+
+    return render_template('checkout.html',credit_cards=credit_cards,addresses=addrs,basket=basket, bid=bid)
+
+
+@app.route('/process_purchase', methods=['POST'])
+def process_purchase():
+    if not is_logged_in():
+        return redirect(url_for('login'))
+    cid = session.get("CID")
+    cursor = db_connection.cursor()
+    query = "INSERT INTO transactions (BID, CCNumber, CID, SAName, TDate) VALUES (%s, %s, %s, %s, GET_DATE())"
+    values = (request.form['bid'], request.form['ccno'], cid, request.form['ship_addr'], )
+    cursor.execute(query, values)
+    db_connection.commit()
+    cursor.close()
+    return redirect(url_for('index'))
+    
 
 @app.route('/edit', methods=['GET', 'POST'])
 def edit():
