@@ -37,27 +37,118 @@
 
     <br>
     <div>3. For a given time period (begin date and end date) compute the most frequently sold products.</div>
-    <form action="{{ url_for('statistics') }}" method="post" id="q3">
+    <form action="{{ url_for('statistics') }}" method="post">
         <label for="start1">Start Date</label>
         <input type="date" name="start1" id="start1" value="2018-07-22"/>
 
         <label for="end1">End Date</label>
         <input type="date" name="end1" id="end1" value="2023-12-30">
+        <input type="hidden" name="question" id="question" value="q3">
         <button type="submit" value="Search">Search</button>
-        
     </form>
-    <div>{{ frequently_sold }}</div>
+    {% if frequently_sold %}
+    <table>
+        <tr>
+            {% for key in frequently_sold[0]  %}
+                <td>{{ key }}</td>
+            {% endfor %}
+        </tr>
+            {% for i in frequently_sold %}
+                <tr>
+                    {% for key, val in i.items() %}
+                        <td>{{ val }}</td>
+                    {% endfor %}
+                </tr>
+            {% endfor %}
+    </table>
+    {% endif %}
     <br>
     <div>4. For a given time period (begin date and end date) compute the products which are
         sold to the highest number of distinct customers.
         </div>
-
+        <form action="{{ url_for('statistics') }}" method="post">
+            <label for="start2">Start Date</label>
+            <input type="date" name="start2" id="start2" value="2018-07-22"/>
+    
+            <label for="end2">End Date</label>
+            <input type="date" name="end2" id="end2" value="2023-12-30">
+            <input type="hidden" name="question" id="question" value="q4">
+            <button type="submit" value="Search">Search</button>
+        </form>
+        {% if distinct_customers %}
+        <table>
+            <tr>
+                {% for key in distinct_customers[0]  %}
+                    <td>{{ key }}</td>
+                {% endfor %}
+            </tr>
+                {% for i in distinct_customers %}
+                    <tr>
+                        {% for key, val in i.items() %}
+                            <td>{{ val }}</td>
+                        {% endfor %}
+                    </tr>
+                {% endfor %}
+        </table>
+        {% endif %}
     <br>
     <div>5. For a given time period (begin date and end date) compute the maximum basket total
         amount per credit card.</div>
+        </div>
+        <form action="{{ url_for('statistics') }}" method="post">
+            <label for="start3">Start Date</label>
+            <input type="date" name="start3" id="start3" value="2020-07-22"/>
 
+            <label for="end3">End Date</label>
+            <input type="date" name="end3" id="end3" value="2023-12-30">
+            <input type="hidden" name="question" id="question" value="q5">
+            <button type="submit" value="Search">Search</button>
+        </form>
+        {% if max_total %}
+        <table>
+            <tr>
+                {% for key in max_total[0]  %}
+                    <td>{{ key }}</td>
+                {% endfor %}
+            </tr>
+                {% for i in max_total %}
+                    <tr>
+                        {% for key, val in i.items() %}
+                            <td>{{ val }}</td>
+                        {% endfor %}
+                    </tr>
+                {% endfor %}
+        </table>
+        {% endif %}
     <br>
     <div>6. For a given time period (begin date and end date) compute the average selling product
         price per product type (desktop, laptop and printer).
         </div>
+
+        <form action="{{ url_for('statistics') }}" method="post">
+            <label for="start4">Start Date</label>
+            <input type="date" name="start4" id="start4" value="2020-07-22"/>
+
+            <label for="end4">End Date</label>
+            <input type="date" name="end4" id="end4" value="2023-12-30">
+            <input type="hidden" name="question" id="question" value="q6">
+            <button type="submit" value="Search">Search</button>
+        </form>
+        {% if avg_selling_price %}
+        <table>
+            <tr>
+                {% for key in avg_selling_price[0]  %}
+                    <td>{{ key }}</td>
+                {% endfor %}
+            </tr>
+                {% for i in avg_selling_price %}
+                    <tr>
+                        {% for key, val in i.items() %}
+                            <td>{{ val }}</td>
+                        {% endfor %}
+                    </tr>
+                {% endfor %}
+        </table>
+        {% endif %}
+        
 {% endblock %}

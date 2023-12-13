@@ -260,21 +260,71 @@ def fetch_statistics_1_and_2():
 
 @app.route('/statistics', methods=['GET', 'POST'])
 def statistics():
+    cursor = db_connection.cursor(dictionary = True)
     total_per_card, best_customers = fetch_statistics_1_and_2()
     if request.method == 'POST':
-        query = """
-                SELECT P.PID, P.PNAME, SUM(A.Quantity) as Quantity_Sold FROM PRODUCT P
-                JOIN APPEARS_IN A ON P.PID = A.PID
-                JOIN BASKET B ON A.BID = B.BID
-                JOIN TRANSACTIONS T ON B.BID = T.BID
-                WHERE T.TDate BETWEEN %s AND %s
-                GROUP BY P.PID
-                ORDER BY Quantity_Sold DESC
-                """
-        values = (request.form['start1'], request.form['end1'])
-        cursor.execute(query, values)
-        frequently_sold = cursor.fetchall()
-        return render_template('statistics.html', total_per_card = total_per_card, best_customers = best_customers, frequently_sold = frequently_sold)
+        id = request.form.get('question')
+        if id == 'q3':
+            query = """
+                    SELECT P.PID, P.PNAME, SUM(A.Quantity) as Quantity_Sold FROM PRODUCT P
+                    JOIN APPEARS_IN A ON P.PID = A.PID
+                    JOIN BASKET B ON A.BID = B.BID
+                    JOIN TRANSACTIONS T ON B.BID = T.BID
+                    WHERE T.TDate BETWEEN %s AND %s
+                    GROUP BY P.PID
+                    ORDER BY Quantity_Sold DESC
+                    """
+            values = (request.form['start1'], request.form['end1'])
+            cursor.execute(query, values)
+            frequently_sold = cursor.fetchall()
+            return render_template('statistics.html', total_per_card = total_per_card, best_customers = best_customers, frequently_sold = frequently_sold)
+        elif id == 'q4':
+            query = """
+                    SELECT P.PID, P.PNAME, COUNT(DISTINCT T.CID) AS Customer_Count FROM PRODUCT P
+                    JOIN APPEARS_IN A ON P.PID = A.PID
+                    JOIN BASKET B ON A.BID = B.BID
+                    JOIN TRANSACTIONS T ON B.BID = T.BID
+                    WHERE T.TDate BETWEEN %s AND %s
+                    GROUP BY P.PID, P.PNAME
+                    ORDER BY Customer_Count DESC
+                    """
+            values = (request.form['start2'], request.form['end2'])
+            cursor.execute(query, values)
+            distinct_customers = cursor.fetchall()
+            return render_template('statistics.html', total_per_card = total_per_card, best_customers = best_customers, distinct_customers = distinct_customers)
+        elif id == 'q5':
+            query = """
+                    SELECT C.CCNUMBER, MAX(TOTALPRICESOLD) as Max_Total
+                    FROM (
+                        SELECT T.CCNUMBER, B.BID, SUM(A.PRICESOLD) AS TOTALPRICESOLD
+                        FROM TRANSACTIONS T
+                        JOIN CREDIT_CARD C ON T.CCNUMBER = C.CCNUMBER
+                        JOIN BASKET B ON T.BID = B.BID
+                        JOIN APPEARS_IN A ON B.BID = A.BID
+                        WHERE T.TDATE BETWEEN %s and %s
+                        GROUP BY T.CCNUMBER, B.BID
+                    ) AS C 
+                    GROUP BY C.CCNUMBER 
+                    """
+            values = (request.form['start3'], request.form['end3'])
+            cursor.execute(query, values)
+            max_total = cursor.fetchall()
+            return render_template('statistics.html', total_per_card = total_per_card, best_customers = best_customers, max_total = max_total)
+        elif id == 'q6':
+            query = """
+                    SELECT A.PID, P.PTYPE, SUM(A.PRICESOLD) / SUM(A.QUANTITY) as Average_Price_Sold FROM APPEARS_IN A
+                    JOIN BASKET B ON A.BID = B.BID
+                    JOIN TRANSACTIONS T ON B.BID = T.BID
+                    JOIN PRODUCT P ON A.PID = P.PID
+                    WHERE T.TDATE BETWEEN %s AND %s
+                    GROUP BY A.PID
+                    """
+            values = (request.form['start4'], request.form['end4'])
+            cursor.execute(query, values)
+            avg_selling_price = cursor.fetchall()
+            return render_template('statistics.html', total_per_card = total_per_card, best_customers = best_customers, avg_selling_price = avg_selling_price)
+
+        return render_template('statistics.html', total_per_card = total_per_card, best_customers = best_customers)
     else:
         return render_template('statistics.html', total_per_card = total_per_card, best_customers = best_customers)
     
