@@ -132,7 +132,7 @@ def products():
     printers = cursor.fetchall()
 
     query = """
-            SELECT P.PNAME FROM BASKET B
+            SELECT P.PNAME, B.BID, P.PID FROM BASKET B
             JOIN APPEARS_IN A ON B.BID = A.BID
             JOIN PRODUCT P ON P.PID = A.PID
             WHERE B.CID=%s
@@ -180,7 +180,7 @@ def remove_from_basket():
     if request.method == 'POST':
         cursor = db_connection.cursor()
         query = """
-                DELETE *
+                DELETE
                 FROM APPEARS_IN
                 WHERE BID=%s AND PID=%s
                 """

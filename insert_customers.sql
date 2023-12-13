@@ -7,14 +7,14 @@ BEGIN
   WHILE i < 20 DO
     BEGIN
       -- Insert random data into CUSTOMER table
-      INSERT INTO CUSTOMER (FName, LName, EMail, Address, Phone, Status)
+      INSERT INTO CUSTOMER (FName, LName, EMail, CAddress, Phone, CStatus)
       VALUES (
         CONCAT('FirstName', FLOOR(RAND() * 100)),
         CONCAT('LastName', FLOOR(RAND() * 100)),
         CONCAT('email', i, '@example.com'),
-        CONCAT('Address', FLOOR(RAND() * 100)),
+        CONCAT('CAddress', FLOOR(RAND() * 100)),
         FLOOR(RAND() * 1000000000),
-        NULL
+        1
       );
 
       -- Get the last inserted ID

@@ -8,6 +8,7 @@
                     {% for key, val in b.items() %}
                         <td>{{ val }}</td>
                     {% endfor %}
+                    <div>{{basket}}</div>
                     <td>
                         <input type="hidden" name="pid" value="{{ b.PID }}">
                         <input type="hidden" name="bid" value="{{b.BID}}">

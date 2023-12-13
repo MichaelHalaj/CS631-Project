@@ -8,7 +8,7 @@ CREATE TABLE IF NOT EXISTS CUSTOMER (
     EMail varchar(255) UNIQUE,
     CAddress varchar(255),
     Phone varchar(15),
-    CStatus INT NOT NULL,
+    CStatus INT NOT NULL DEFAULT 0,
     PRIMARY KEY (CID)
 );
 
