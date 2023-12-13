@@ -1,7 +1,10 @@
 {% extends 'base.html' %}
 {% block content %}
     <h1>Current Basket</h1>
-        <div>{{ basket }}</div>
+        <form action="{{ url_for('order_basket') }}">
+            <div>{{ basket }}</div>
+            <input type="submit" value="Order Basket">
+        </form>
     <h1>Products</h1>
     <table>
         <tr>
@@ -44,4 +47,25 @@
             </form>
         {% endfor %}
     </table>
+    <table>
+        <tr>
+            {% for key in printers[0]  %}
+                <td>{{ key }}</td>
+            {% endfor %}
+        </tr>
+        {% for p in printers %}
+            <form action="{{ url_for('add_to_basket') }}" method="post">
+                <tr>
+                    {% for key, val in p.items() %}
+                        <td>{{ val }}</td>
+                    {% endfor %}
+                    <td>
+                        <input type="hidden" name="pid" value="{{ p.PID }}">
+                        <input type="submit" value="Add to Basket">
+                    </td>
+                </tr>
+            </form>
+        {% endfor %}
+    </table>
+    
 {% endblock %}

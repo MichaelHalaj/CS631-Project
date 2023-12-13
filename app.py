@@ -124,6 +124,14 @@ def products():
     computers = cursor.fetchall()
 
     query = """
+            SELECT * FROM PRODUCT P
+            JOIN PRINTER PR ON P.PID = PR.PID
+            WHERE P.PTYPE = 'PRINTER'
+            """
+    cursor.execute(query)
+    printers = cursor.fetchall()
+
+    query = """
             SELECT P.PNAME FROM BASKET B
             JOIN APPEARS_IN A ON B.BID = A.BID
             JOIN PRODUCT P ON P.PID = A.PID
@@ -133,7 +141,11 @@ def products():
     cursor.execute(query, values)
     basket = cursor.fetchall()
     db_connection.commit()
-    return render_template('products.html', products = products, computers = computers, basket = basket)
+    return render_template('products.html', products = products, computers = computers, basket = basket, printers = printers)
+
+@app.route('/order_basket', methods=['POST'])
+def order_basket():
+    pass
 
 @app.route('/add_to_basket', methods=['POST'])
 def add_to_basket():
