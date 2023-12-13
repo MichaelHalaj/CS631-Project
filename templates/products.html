@@ -1,10 +1,23 @@
 {% extends 'base.html' %}
 {% block content %}
     <h1>Current Basket</h1>
-        <form action="{{ url_for('order_basket') }}">
-            <div>{{ basket }}</div>
-            <input type="submit" value="Order Basket">
-        </form>
+    <table>
+        {% for b in basket %}
+            <form action="{{ url_for('remove_from_basket') }}" method="post">
+                <tr>
+                    {% for key, val in b.items() %}
+                        <td>{{ val }}</td>
+                    {% endfor %}
+                    <td>
+                        <input type="hidden" name="pid" value="{{ b.PID }}">
+                        <input type="hidden" name="bid" value="{{b.BID}}">
+                        <input type="submit" value="Remove From Basket">
+                    </td>
+                </tr>
+            </form>
+        {% endfor %}
+    </table>
+        <form action="{{ url_for('prepare_purchase') }}" method="post"><input type="submit" value="Checkout"></form>
     <h1>Products</h1>
     <table>
         <tr>

@@ -6,9 +6,9 @@ CREATE TABLE IF NOT EXISTS CUSTOMER (
     FName varchar(25),
     LName varchar(25),
     EMail varchar(255) UNIQUE,
-    Address varchar(255),
+    CAddress varchar(255),
     Phone varchar(15),
-    Status varchar(20),
+    CStatus INT NOT NULL,
     PRIMARY KEY (CID)
 );
 
