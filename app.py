@@ -242,13 +242,14 @@ def confirm_edit():
 def prepare_purchase():
     if not is_logged_in():
         return redirect(url_for('login'))
+    cursor = db_connection.cursor(buffered=True, dictionary = True)
     cid = session.get("CID")
     query = """
             SELECT *
             FROM CREDIT_CARD
             WHERE STOREDCARDCID=%s
             """
-    values = (cid)
+    values = (cid, )
     cursor.execute(query, values)
     credit_cards=cursor.fetchall()
 
@@ -257,7 +258,7 @@ def prepare_purchase():
             FROM SHIPPING_ADDRESS
             WHERE CID=%s
             """
-    values = (cid)
+    values = (cid, )
     cursor.execute(query, values)
     addrs=cursor.fetchall()
     query = """
@@ -288,7 +289,7 @@ def process_purchase():
         return redirect(url_for('login'))
     cid = session.get("CID")
     cursor = db_connection.cursor()
-    query = "INSERT INTO transactions (BID, CCNumber, CID, SAName, TDate) VALUES (%s, %s, %s, %s, GET_DATE())"
+    query = "INSERT INTO transactions (BID, CCNumber, CID, SAName, TDate, TTag) VALUES (%s, %s, %s, %s, CURDATE(), 'processed')"
     values = (request.form['bid'], request.form['ccno'], cid, request.form['ship_addr'], )
     cursor.execute(query, values)
     db_connection.commit()
