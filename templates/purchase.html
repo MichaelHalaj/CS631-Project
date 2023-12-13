@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+{% block content %}
+    <h1>Current Basket</h1>
+        <div>{{ basket }}</div>
+    <h1>Products</h1>
+    <form action="{{ url_for('process_purchase') }}" method="post">
+        <select name="ccno">
+            {% for c in credit_cards %}
+            <option value="{{c.CCNumber}}"></option>
+            {% endfor %}
+        </select>
+        <select name="ship_addr">
+            {% for addr in addresses %}
+            <option value="{{addr.SAName}}"></option>
+            {% endfor %}
+        </select>
+        <input type="hidden" name="bid" value="{{bid}}">
+        <input type="submit" value="Purchase">
+    </form>
+{% endblock %}
