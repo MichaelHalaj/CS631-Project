@@ -19,7 +19,6 @@ cursor = db_connection.cursor()
 
 def is_logged_in():
     if not session.get("CID"):
-        print('no cid')
         return False
     return True
 
@@ -151,7 +150,7 @@ def order_basket():
 def add_to_basket():
     is_logged_in()
     if request.method == 'POST':
-        cursor = db_connection.cursor()
+        cursor = db_connection.cursor(buffered=True, dictionary=True)
         cid = session.get("CID")
         query = """
                 INSERT INTO BASKET (CID)
@@ -160,14 +159,24 @@ def add_to_basket():
         values = (cid, )
         cursor.execute(query, values)
 
+        pid = request.form['pid']
+       # query = """
+        #        SELECT P.PPRICE FROM PRODUCT P 
+         #       WHERE P.PID = %s
+          #      """
+        #values = (pid, )
+        #cursor.execute(query, values)
+        #priceDict = cursor.fetchone()
+        #price = priceDict['PPRICE']
+
         bid = cursor.lastrowid
         query = """
                 INSERT INTO APPEARS_IN (BID, PID, Quantity, PriceSold)
                 VALUES (%s, %s, %s, %s)
                 """
         values = (bid,
-                request.form['pid'],
-                0,
+                pid,
+                1,
                 0)
         cursor.execute(query, values)
         db_connection.commit()
@@ -315,9 +324,11 @@ def process_purchase():
     if not is_logged_in():
         return redirect(url_for('login'))
     cid = session.get("CID")
+    bid = request.form['bid']
     cursor = db_connection.cursor()
     query = "INSERT IGNORE INTO transactions (BID, CCNumber, CID, SAName, TDate, TTag) VALUES (%s, %s, %s, %s, CURDATE(), 'processed')"
-    values = (request.form['bid'], request.form['ccno'], cid, request.form['ship_addr'], )
+    values = (bid, request.form['ccno'], cid, request.form['ship_addr'], )
+
     cursor.execute(query, values)
     db_connection.commit()
     cursor.close()
