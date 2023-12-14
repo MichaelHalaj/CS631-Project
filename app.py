@@ -129,19 +129,22 @@ def products():
             """
     cursor.execute(query)
     printers = cursor.fetchall()
+    bid = session.get('BID')
+    if session.get('BID'):
 
-    query = """
-            SELECT P.PID, P.PNAME, B.BID, SUM(A.QUANTITY) as Quantity FROM BASKET B
-            JOIN APPEARS_IN A ON B.BID = A.BID
-            JOIN PRODUCT P ON P.PID = A.PID
-            WHERE B.CID=%s
-            GROUP BY P.PID, P.PNAME, B.BID
-            """
-    values = (cid, )
-    cursor.execute(query, values)
-    basket = cursor.fetchall()
-    db_connection.commit()
-    return render_template('products.html', products = products, computers = computers, basket = basket, printers = printers)
+        query = """
+                SELECT P.PID, P.PNAME, B.BID, SUM(A.QUANTITY) as Quantity FROM BASKET B
+                JOIN APPEARS_IN A ON B.BID = A.BID
+                JOIN PRODUCT P ON P.PID = A.PID
+                WHERE B.CID=%s and B.BID = %s
+                GROUP BY P.PID, P.PNAME, B.BID
+                """
+        values = (cid, bid)
+        cursor.execute(query, values)
+        basket = cursor.fetchall()
+        db_connection.commit()
+        return render_template('products.html', products = products, computers = computers, basket = basket, printers = printers)
+    return render_template('products.html', products = products, computers = computers, printers = printers)
 
 @app.route('/order_basket', methods=['POST'])
 def order_basket():
@@ -204,7 +207,7 @@ def add_to_basket():
 def remove_from_basket():
     is_logged_in()
     if request.method == 'POST':
-        cursor = db_connection.cursor()
+        cursor = db_connection.cursor(dictionary=True)
         query = """
                 DELETE
                 FROM APPEARS_IN
@@ -341,7 +344,7 @@ def process_purchase():
     if not is_logged_in():
         return redirect(url_for('login'))
     cid = session.get("CID")
-    bid = request.form['bid']
+    bid = session['BID']
     cursor = db_connection.cursor()
     query = "INSERT IGNORE INTO transactions (BID, CCNumber, CID, SAName, TDate, TTag) VALUES (%s, %s, %s, %s, CURDATE(), 'processed')"
     values = (bid, request.form['ccno'], cid, request.form['ship_addr'], )
@@ -349,6 +352,7 @@ def process_purchase():
     cursor.execute(query, values)
     db_connection.commit()
     cursor.close()
+    session['BID'] = None
     return redirect(url_for('index'))
     
 

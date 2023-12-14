@@ -1,7 +1,9 @@
 {% extends 'base.html' %}
 {% block content %}
     <h1>Current Basket</h1>
+    {% if basket %}
     <table>
+        
         {% for b in basket %}
             <form action="{{ url_for('remove_from_basket') }}" method="post">
                 <tr>
@@ -16,6 +18,7 @@
             </form>
         {% endfor %}
     </table>
+    {% endif %}
         <form action="{{ url_for('prepare_purchase') }}" method="post"><input type="submit" value="Checkout"></form>
     <h1>Products</h1>
     <table>
