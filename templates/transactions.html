@@ -1,0 +1,43 @@
+{% extends 'base.html' %}
+{% block content %}
+    <h1>All Transactions</h1>
+    <table>
+        <tr>
+            {% for key in transactions[0]  %}
+                <td>{{ key }}</td>
+            {% endfor %}
+        </tr>
+        {% for p in transactions %}
+            <tr>
+                {% for key, val in p.items() %}
+                    <td>{{ val }}</td>
+                {% endfor %}
+            </tr>
+        {% endfor %}
+    </table>
+    <h1>Search Transactions</h1>
+    <form action="{{url_for('transactions')}}", method="post">
+        <label for="start">Start Date</label>
+        <input type="date" name="start" id="start" value="2021-07-22"/>
+
+        <label for="end">End Date</label>
+        <input type="date" name="end" id="end" value="2023-12-30">
+        <input type="submit" value="Search">
+    </form>
+    {% if transactions_with_dates %}
+    <table>
+        <tr>
+            {% for key in transactions_with_dates[0]  %}
+                <td>{{ key }}</td>
+            {% endfor %}
+        </tr>
+        {% for p in transactions_with_dates %}
+            <tr>
+                {% for key, val in p.items() %}
+                    <td>{{ val }}</td>
+                {% endfor %}
+            </tr>
+        {% endfor %}
+    </table>
+    {% endif %}
+{% endblock %}

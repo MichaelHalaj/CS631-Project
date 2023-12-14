@@ -1,0 +1,9 @@
+{% extends 'base.html' %}
+{% block content %}
+    <form action="{{url_for('process_purchase')}}" method="post">
+        <input type="hidden" name="bid" value="{{bid['BID']}}">
+        <input type="hidden" name="ccno" value="{{credit_cards[0]['CCNumber']}}">
+        <input type="hidden" name="ship_addr" value="{{addresses[0]['SAName']}}">
+        <input type="submit" value="Complete Purchase">
+    </form>
+{% endblock %}

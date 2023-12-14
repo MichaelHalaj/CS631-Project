@@ -5,9 +5,7 @@
         {% for b in basket %}
             <form action="{{ url_for('remove_from_basket') }}" method="post">
                 <tr>
-                    {% for key, val in b.items() %}
-                        <td>{{ val }}</td>
-                    {% endfor %}
+                    <td>{{ b['PNAME'] }}</td>
                     <td>
                         <input type="hidden" name="pid" value="{{ b.PID }}">
                         <input type="hidden" name="bid" value="{{b.BID}}">
@@ -60,4 +58,25 @@
             </form>
         {% endfor %}
     </table>
+    <table>
+        <tr>
+            {% for key in printers[0]  %}
+                <td>{{ key }}</td>
+            {% endfor %}
+        </tr>
+        {% for p in printers %}
+            <form action="{{ url_for('add_to_basket') }}" method="post">
+                <tr>
+                    {% for key, val in p.items() %}
+                        <td>{{ val }}</td>
+                    {% endfor %}
+                    <td>
+                        <input type="hidden" name="pid" value="{{ p.PID }}">
+                        <input type="submit" value="Add to Basket">
+                    </td>
+                </tr>
+            </form>
+        {% endfor %}
+    </table>
+    
 {% endblock %}
