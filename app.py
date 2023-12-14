@@ -282,6 +282,33 @@ def prepare_purchase():
 
     return render_template('checkout.html',credit_cards=credit_cards,addresses=addrs,basket=basket, bid=bid)
 
+def get_transactions():
+    cid = session.get("CID")
+    cursor = db_connection.cursor(dictionary=True)
+    query = """
+            SELECT * FROM TRANSACTIONS T
+            WHERE T.CID = %s
+            """
+    values = (cid, )
+    cursor.execute(query, values)
+    transactions = cursor.fetchall()
+    return transactions
+
+@app.route('/transactions', methods=['GET', 'POST'])
+def transactions():
+    cursor = db_connection.cursor(dictionary=True)
+    transactions = get_transactions()
+    cid = session.get("CID")
+    if request.method == 'POST':
+        query = """
+                SELECT * FROM TRANSACTIONS T
+                WHERE T.CID = %s AND T.TDate BETWEEN %s and %s
+                """
+        values = (cid, request.form['start'], request.form['end'])
+        cursor.execute(query, values)
+        transactions_with_dates = cursor.fetchall()
+        return render_template('transactions.html', transactions = transactions, transactions_with_dates = transactions_with_dates)
+    return render_template('transactions.html', transactions = transactions)
 
 @app.route('/process_purchase', methods=['POST'])
 def process_purchase():
@@ -289,7 +316,7 @@ def process_purchase():
         return redirect(url_for('login'))
     cid = session.get("CID")
     cursor = db_connection.cursor()
-    query = "INSERT INTO transactions (BID, CCNumber, CID, SAName, TDate, TTag) VALUES (%s, %s, %s, %s, CURDATE(), 'processed')"
+    query = "INSERT IGNORE INTO transactions (BID, CCNumber, CID, SAName, TDate, TTag) VALUES (%s, %s, %s, %s, CURDATE(), 'processed')"
     values = (request.form['bid'], request.form['ccno'], cid, request.form['ship_addr'], )
     cursor.execute(query, values)
     db_connection.commit()
