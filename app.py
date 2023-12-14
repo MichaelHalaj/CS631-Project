@@ -131,10 +131,11 @@ def products():
     printers = cursor.fetchall()
 
     query = """
-            SELECT P.PNAME, B.BID, P.PID FROM BASKET B
+            SELECT P.PID, P.PNAME, B.BID, SUM(A.QUANTITY) as Quantity FROM BASKET B
             JOIN APPEARS_IN A ON B.BID = A.BID
             JOIN PRODUCT P ON P.PID = A.PID
             WHERE B.CID=%s
+            GROUP BY P.PID, P.PNAME, B.BID
             """
     values = (cid, )
     cursor.execute(query, values)
@@ -151,35 +152,51 @@ def add_to_basket():
     is_logged_in()
     if request.method == 'POST':
         cursor = db_connection.cursor(buffered=True, dictionary=True)
+
         cid = session.get("CID")
-        query = """
-                INSERT INTO BASKET (CID)
-                VALUES (%s)
-                """
-        values = (cid, )
-        cursor.execute(query, values)
+
 
         pid = request.form['pid']
-       # query = """
-        #        SELECT P.PPRICE FROM PRODUCT P 
-         #       WHERE P.PID = %s
-          #      """
-        #values = (pid, )
-        #cursor.execute(query, values)
-        #priceDict = cursor.fetchone()
-        #price = priceDict['PPRICE']
-
-        bid = cursor.lastrowid
         query = """
-                INSERT INTO APPEARS_IN (BID, PID, Quantity, PriceSold)
-                VALUES (%s, %s, %s, %s)
+                SELECT P.PPRICE FROM PRODUCT P 
+                WHERE P.PID = %s
                 """
-        values = (bid,
-                pid,
-                1,
-                0)
+        values = (pid, )
         cursor.execute(query, values)
-        db_connection.commit()
+        priceDict = cursor.fetchone()
+        price = priceDict['PPRICE']
+        if not session.get("BID"):
+            query = """
+                    INSERT INTO BASKET (CID)
+                    VALUES (%s)
+                    """
+            values = (cid, )
+            cursor.execute(query, values)
+            bid = cursor.lastrowid
+            session["BID"] = bid
+        
+            query = """
+                    INSERT INTO APPEARS_IN (BID, PID, Quantity, PriceSold)
+                    VALUES (%s, %s, %s, %s)
+                    """
+            values = (bid,
+                    pid,
+                    1,
+                    price)
+            cursor.execute(query, values)
+            db_connection.commit()
+        else:
+            bid = session.get("BID")
+            query = """
+                    INSERT INTO APPEARS_IN (BID, PID, Quantity, PriceSold)
+                    VALUES(%s, %s, 1, %s)
+                    ON DUPLICATE KEY UPDATE
+                    QUANTITY = QUANTITY + 1, 
+                    PRICESOLD = %s * QUANTITY
+                    """
+            values = (bid, pid, price, price)
+            cursor.execute(query, values)
+            db_connection.commit()
         return redirect(url_for('products'))
     return redirect(url_for('products'))
 
