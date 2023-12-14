@@ -349,7 +349,31 @@ def statistics():
         values = (request.form['start1'], request.form['end1'])
         cursor.execute(query, values)
         frequently_sold = cursor.fetchall()
-        return render_template('statistics.html', total_per_card = total_per_card, best_customers = best_customers, frequently_sold = frequently_sold)
+        query = """
+                SELECT P.PID, P.PNAME, COUNT(DISTINCT B.CID) as NumCustomers FROM PRODUCT P
+                JOIN APPEARS_IN A ON P.PID = A.PID
+                JOIN BASKET B ON A.BID = B.BID
+                JOIN TRANSACTIONS T ON B.BID = T.BID
+                WHERE T.TDate BETWEEN %s AND %s
+                GROUP BY P.PID
+                ORDER BY NumCustomers DESC
+                """
+        values = (request.form['start1'], request.form['end1'])
+        cursor.execute(query, values)
+        distinct_sales = cursor.fetchall()
+        query = """
+                SELECT P.TYPE, AVERAGE(A.PRICESOLD) as SalePrice FROM PRODUCT P
+                JOIN APPEARS_IN A ON P.PID = A.PID
+                JOIN BASKET B ON A.BID = B.BID
+                JOIN TRANSACTIONS T ON B.BID = T.BID
+                WHERE T.TDate BETWEEN %s AND %s
+                GROUP BY P.PTYPE
+                ORDER BY SalePrice DESC
+                """
+        values = (request.form['start1'], request.form['end1'])
+        cursor.execute(query, values)
+        average_price = cursor.fetchall()
+        return render_template('statistics.html', total_per_card = total_per_card, best_customers = best_customers, frequently_sold = frequently_sold, distinct_sales=distinct_sales, average_price=average_price)
     else:
         return render_template('statistics.html', total_per_card = total_per_card, best_customers = best_customers)
     
