@@ -396,6 +396,7 @@ def fetch_statistics_1_and_2():
         FROM CUSTOMER C
         JOIN BASKET B ON C.CID = B.CID
         JOIN APPEARS_IN A on B.BID = A.BID
+        JOIN Transactions T on B.BID = T.BID
         GROUP BY C.CID
         ORDER BY Total_Charged DESC
         LIMIT 10
