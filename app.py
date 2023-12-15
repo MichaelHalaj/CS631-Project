@@ -465,7 +465,7 @@ def statistics():
                     JOIN TRANSACTIONS T ON B.BID = T.BID
                     JOIN PRODUCT P ON A.PID = P.PID
                     WHERE T.TDATE BETWEEN %s AND %s
-                    GROUP BY A.PTYPE
+                    GROUP BY A.PID, P.PTYPE
                     """
             values = (request.form['start4'], request.form['end4'])
             cursor.execute(query, values)
